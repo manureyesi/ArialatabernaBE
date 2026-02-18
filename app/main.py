@@ -12,12 +12,8 @@ from app.settings import settings
 
 app = FastAPI(title="Ariala Taberna API", version="1.0.0")
 
-app.mount("/static", StaticFiles(directory="static"), name="static")
-
-
 @app.on_event("startup")
 def _startup():
-    os.makedirs("static/events", exist_ok=True)
     Base.metadata.create_all(bind=engine)
 
 

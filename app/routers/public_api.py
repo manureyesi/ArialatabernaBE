@@ -407,6 +407,6 @@ def contact_projects(payload: ContactProjectsCreate, db: Session = Depends(get_d
 def get_public_config():
     return {
         "environment": "prod",
-        "features": {"reservationsEnabled": True, "menuEnabled": True, "projectsContactEnabled": True},
+        "features": {"reservationsEnabled": False, "menuEnabled": True, "projectsContactEnabled": True},
         "limits": {"maxMessageLength": 500},
     }
