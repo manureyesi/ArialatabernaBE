@@ -24,6 +24,17 @@ def _startup():
         if not existing:
             db.add(AppConfig(key="reserva-activa", value="false"))
             db.commit()
+
+        existing = db.get(AppConfig, "telefono-contacto")
+        if not existing:
+            db.add(AppConfig(key="telefono-contacto", value=""))
+            db.commit()
+
+        existing = db.get(AppConfig, "mail-contacto")
+        if not existing:
+            db.add(AppConfig(key="mail-contacto", value="@"))
+            db.commit()
+
     finally:
         db.close()
 

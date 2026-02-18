@@ -141,11 +141,18 @@ class ProjectContactAdminItem(BaseModel):
     message: str
     consent: bool
     source: str | None = None
+    isRead: bool = False
+    readAt: datetime | None = None
     createdAt: datetime
 
 
 class ProjectContactAdminListResponse(BaseModel):
     items: list[ProjectContactAdminItem]
+
+
+class ProjectContactAdminStatsResponse(BaseModel):
+    total: int
+    unread: int
 
 
 class EventBase(BaseModel):

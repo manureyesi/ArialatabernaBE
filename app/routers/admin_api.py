@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from fastapi import APIRouter, Depends, HTTPException, Response, status
-from sqlalchemy import select
+from sqlalchemy import select, func
 from sqlalchemy.orm import Session
 
 from datetime import datetime, timedelta
@@ -14,6 +14,7 @@ from app.schemas import (
     ConfigListResponse,
     ProjectContactAdminItem,
     ProjectContactAdminListResponse,
+    ProjectContactAdminStatsResponse,
     AdminFoodCreate,
     AdminWineCreate,
     EventAdminItem,
@@ -166,11 +167,42 @@ def list_project_requests(limit: int = 100, offset: int = 0, db: Session = Depen
                 message=it.message,
                 consent=it.consent,
                 source=it.source,
+                isRead=it.is_read,
+                readAt=it.read_at,
                 createdAt=it.created_at,
             )
             for it in items
         ]
     )
+
+
+@router.get("/contacts/projects/stats", response_model=ProjectContactAdminStatsResponse)
+def project_requests_stats(db: Session = Depends(get_db)):
+    total = db.execute(select(func.count(ProjectContact.id))).scalar_one()
+    unread = db.execute(select(func.count(ProjectContact.id)).where(ProjectContact.is_read == False)).scalar_one()  # noqa: E712
+    return ProjectContactAdminStatsResponse(total=int(total), unread=int(unread))
+
+
+@router.post("/contacts/projects/{lead_id}/read")
+def mark_project_request_read(lead_id: str, db: Session = Depends(get_db)):
+    if not lead_id.startswith("lead_"):
+        raise HTTPException(status_code=404, detail="Not found")
+    try:
+        db_id = int(lead_id.split("_", 1)[1])
+    except ValueError:
+        raise HTTPException(status_code=404, detail="Not found")
+
+    lead = db.execute(select(ProjectContact).where(ProjectContact.id == db_id)).scalar_one_or_none()
+    if not lead:
+        raise HTTPException(status_code=404, detail="Not found")
+
+    if not lead.is_read:
+        lead.is_read = True
+        lead.read_at = datetime.utcnow()
+        db.add(lead)
+        db.commit()
+
+    return {"id": f"lead_{lead.id}", "isRead": lead.is_read}
 
 
 @router.get("/events", response_model=EventAdminListResponse)
