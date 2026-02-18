@@ -143,28 +143,31 @@ def update_menu_item(item_id: str, payload: AdminFoodUpdate | AdminWineUpdate, d
     if not item:
         raise HTTPException(status_code=404, detail="Not found")
 
-    if payload.name is not None:
+    def _should_update(field_name: str) -> bool:
+        return field_name in payload.model_fields_set and getattr(payload, field_name) is not None
+
+    if _should_update("name"):
         item.name = payload.name
-    if payload.description is not None:
+    if _should_update("description"):
         item.description = payload.description
-    if payload.imageUrl is not None:
+    if _should_update("imageUrl"):
         item.image_url = payload.imageUrl
-    if payload.isActive is not None:
+    if _should_update("isActive"):
         item.is_active = payload.isActive
 
     if expected_type == MenuItemType.FOOD:
-        if payload.category is not None:
+        if _should_update("category"):
             item.category = payload.category
-        if payload.price is not None:
+        if _should_update("price"):
             item.price_cents = eur_to_cents(payload.price)
     else:
-        if payload.category is not None:
+        if _should_update("category"):
             item.category = payload.category
-        if payload.region is not None:
+        if _should_update("region"):
             item.region = payload.region
-        if payload.glassPrice is not None:
+        if _should_update("glassPrice"):
             item.glass_price_cents = eur_to_cents(payload.glassPrice)
-        if payload.bottlePrice is not None:
+        if _should_update("bottlePrice"):
             item.bottle_price_cents = eur_to_cents(payload.bottlePrice)
 
     db.add(item)
