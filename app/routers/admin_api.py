@@ -28,10 +28,10 @@ from app.utils import eur_to_cents, event_public_id
 router = APIRouter(prefix="/admin", dependencies=[Depends(require_admin)])
 
 
-@router.get("/config", response_model=ConfigListResponse)
+@router.get("/config", response_model=list[ConfigItem])
 def list_config(db: Session = Depends(get_db)):
     items = db.execute(select(AppConfig)).scalars().all()
-    return ConfigListResponse(items=[ConfigItem(key=i.key, value=i.value) for i in items])
+    return [ConfigItem(key=i.key, value=i.value) for i in items]
 
 
 @router.put("/config/{key}", response_model=ConfigItem)
