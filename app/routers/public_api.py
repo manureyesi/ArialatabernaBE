@@ -7,7 +7,7 @@ from sqlalchemy import select, func
 from sqlalchemy.orm import Session
 
 from app.db import get_db
-from app.models import MenuItem, MenuItemType, ScheduleDay, ServiceWindow, Reservation, ReservationStatus, ProjectContact, Event
+from app.models import MenuItem, MenuItemType, ScheduleDay, ServiceWindow, Reservation, ReservationStatus, ProjectContact, Event, AppConfig
 from app.schemas import (
     MenuResponse,
     FoodItem,
@@ -26,6 +26,8 @@ from app.schemas import (
     CancelReservation,
     ContactProjectsCreate,
     ContactProjectsOut,
+    ConfigItem,
+    ConfigListResponse,
 )
 from app.settings import settings
 from app.utils import cents_to_eur, eur_to_cents, food_public_id, wine_public_id, reservation_public_id, lead_public_id, event_public_id, now_utc
@@ -407,10 +409,7 @@ def contact_projects(payload: ContactProjectsCreate, db: Session = Depends(get_d
     return ContactProjectsOut(id=lead_public_id(lead.id))
 
 
-@router.get("/config")
-def get_public_config():
-    return {
-        "environment": "prod",
-        "features": {"reservationsEnabled": False, "menuEnabled": True, "projectsContactEnabled": True},
-        "limits": {"maxMessageLength": 500},
-    }
+@router.get("/config", response_model=ConfigListResponse)
+def get_public_config(db: Session = Depends(get_db)):
+    items = db.execute(select(AppConfig)).scalars().all()
+    return ConfigListResponse(items=[ConfigItem(key=i.key, value=i.value) for i in items])
