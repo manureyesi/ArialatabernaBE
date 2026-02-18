@@ -30,6 +30,23 @@ class WineItem(MenuItemBase):
     imageUrl: str | None = None
 
 
+class AdminFoodCreate(BaseModel):
+    name: str
+    description: str | None = None
+    price: float | None = None
+    imageUrl: str | None = None
+
+
+class AdminWineCreate(BaseModel):
+    name: str
+    description: str | None = None
+    category: str | None = None
+    region: str | None = None
+    glassPrice: float | None = None
+    bottlePrice: float | None = None
+    imageUrl: str | None = None
+
+
 class MenuResponse(BaseModel):
     id: str
     updatedAt: datetime

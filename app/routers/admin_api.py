@@ -14,6 +14,8 @@ from app.schemas import (
     ConfigListResponse,
     ProjectContactAdminItem,
     ProjectContactAdminListResponse,
+    AdminFoodCreate,
+    AdminWineCreate,
     EventAdminItem,
     EventAdminListResponse,
     EventCreate,
@@ -50,19 +52,13 @@ def set_config(key: str, payload: ConfigItem, db: Session = Depends(get_db)):
 
 
 @router.post("/menu/food", status_code=status.HTTP_201_CREATED)
-def create_food(
-    name: str,
-    description: str | None = None,
-    price: float | None = None,
-    imageUrl: str | None = None,
-    db: Session = Depends(get_db),
-):
+def create_food(payload: AdminFoodCreate, db: Session = Depends(get_db)):
     item = MenuItem(
         type=MenuItemType.FOOD,
-        name=name,
-        description=description,
-        price_cents=eur_to_cents(price),
-        image_url=imageUrl,
+        name=payload.name,
+        description=payload.description,
+        price_cents=eur_to_cents(payload.price),
+        image_url=payload.imageUrl,
         is_active=True,
     )
     db.add(item)
@@ -72,25 +68,16 @@ def create_food(
 
 
 @router.post("/menu/wines", status_code=status.HTTP_201_CREATED)
-def create_wine(
-    name: str,
-    description: str | None = None,
-    category: str | None = None,
-    region: str | None = None,
-    glassPrice: float | None = None,
-    bottlePrice: float | None = None,
-    imageUrl: str | None = None,
-    db: Session = Depends(get_db),
-):
+def create_wine(payload: AdminWineCreate, db: Session = Depends(get_db)):
     item = MenuItem(
         type=MenuItemType.WINE,
-        name=name,
-        description=description,
-        category=category,
-        region=region,
-        glass_price_cents=eur_to_cents(glassPrice),
-        bottle_price_cents=eur_to_cents(bottlePrice),
-        image_url=imageUrl,
+        name=payload.name,
+        description=payload.description,
+        category=payload.category,
+        region=payload.region,
+        glass_price_cents=eur_to_cents(payload.glassPrice),
+        bottle_price_cents=eur_to_cents(payload.bottlePrice),
+        image_url=payload.imageUrl,
         is_active=True,
     )
     db.add(item)
