@@ -1,0 +1,33 @@
+version: '3.8'
+
+services:
+  db:
+    image: mysql:8.4
+    container_name: ariala_taberna_db
+    environment:
+      MYSQL_DATABASE: ariala
+      MYSQL_USER: ariala
+      MYSQL_PASSWORD: ariala
+      MYSQL_ROOT_PASSWORD: root
+    ports:
+      - "127.0.0.1:3306:3306"
+    volumes:
+      - ariala_mysql:/var/lib/mysql
+    command: ["--default-authentication-plugin=mysql_native_password"]
+
+  api:
+    build: .
+    container_name: ariala_taberna_api
+    environment:
+      DATABASE_URL: mysql+pymysql://ariala:ariala@db:3306/ariala
+      ADMIN_USERNAME: admin
+      ADMIN_PASSWORD: admin
+      CORS_ORIGINS: http://localhost:8080,http://localhost:3000
+      RESERVATION_SLOT_CAPACITY: "10"
+    ports:
+      - "8001:8000"
+    depends_on:
+      - db
+
+volumes:
+  ariala_mysql:
