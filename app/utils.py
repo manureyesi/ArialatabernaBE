@@ -31,5 +31,9 @@ def lead_public_id(db_id: int) -> str:
     return f"lead_{db_id}"
 
 
+def event_public_id(db_id: int) -> str:
+    return f"evt_{db_id}"
+
+
 def now_utc() -> datetime:
     return datetime.utcnow()

@@ -105,3 +105,23 @@ class AppConfig(Base):
     key: Mapped[str] = mapped_column(String(100), primary_key=True)
     value: Mapped[str] = mapped_column(Text)
     updated_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+
+
+class Event(Base):
+    __tablename__ = "events"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
+
+    title: Mapped[str] = mapped_column(String(255), index=True)
+    date_start: Mapped[datetime] = mapped_column(DateTime(timezone=True), index=True)
+    date_end: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+    timezone: Mapped[str] = mapped_column(String(64), default="Europe/Madrid")
+    description: Mapped[str] = mapped_column(Text)
+    category: Mapped[str] = mapped_column(String(100), index=True)
+    image_url: Mapped[str] = mapped_column(String(2048))
+    location_name: Mapped[str | None] = mapped_column(String(255), nullable=True)
+
+    is_published: Mapped[bool] = mapped_column(Boolean, default=False, index=True)
+
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow, index=True)
+    updated_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)

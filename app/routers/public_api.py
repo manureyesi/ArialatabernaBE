@@ -7,11 +7,14 @@ from sqlalchemy import select, func
 from sqlalchemy.orm import Session
 
 from app.db import get_db
-from app.models import MenuItem, MenuItemType, ScheduleDay, ServiceWindow, Reservation, ReservationStatus, ProjectContact
+from app.models import MenuItem, MenuItemType, ScheduleDay, ServiceWindow, Reservation, ReservationStatus, ProjectContact, Event
 from app.schemas import (
     MenuResponse,
     FoodItem,
     WineItem,
+    EventPublicDetail,
+    EventPublicItem,
+    EventPublicListResponse,
     ScheduleResponse,
     ScheduleDaySchema,
     ServiceWindowSchema,
@@ -25,10 +28,107 @@ from app.schemas import (
     ContactProjectsOut,
 )
 from app.settings import settings
-from app.utils import cents_to_eur, eur_to_cents, food_public_id, wine_public_id, reservation_public_id, lead_public_id, now_utc
+from app.utils import cents_to_eur, eur_to_cents, food_public_id, wine_public_id, reservation_public_id, lead_public_id, event_public_id, now_utc
 
 
 router = APIRouter(prefix="/api/v1")
+
+
+@router.get("/events", response_model=EventPublicListResponse)
+def list_events(
+    from_: str | None = None,
+    to: str | None = None,
+    category: str | None = None,
+    limit: int = 20,
+    cursor: str | None = None,
+    db: Session = Depends(get_db),
+):
+    if limit < 1 or limit > 100:
+        raise HTTPException(status_code=400, detail="Invalid limit")
+
+    offset = 0
+    if cursor:
+        try:
+            offset = int(cursor)
+        except ValueError:
+            raise HTTPException(status_code=400, detail="Invalid cursor")
+        if offset < 0:
+            raise HTTPException(status_code=400, detail="Invalid cursor")
+
+    stmt = select(Event).where(Event.is_published == True)  # noqa: E712
+    if category:
+        stmt = stmt.where(Event.category == category)
+
+    if from_:
+        try:
+            from_dt = datetime.strptime(from_, "%Y-%m-%d")
+        except ValueError:
+            raise HTTPException(status_code=400, detail="Invalid from")
+        stmt = stmt.where(Event.date_start >= from_dt)
+
+    if to:
+        try:
+            to_dt = datetime.strptime(to, "%Y-%m-%d") + timedelta(days=1)
+        except ValueError:
+            raise HTTPException(status_code=400, detail="Invalid to")
+        stmt = stmt.where(Event.date_start < to_dt)
+
+    stmt = stmt.order_by(Event.date_start.asc()).offset(offset).limit(limit + 1)
+    rows = db.execute(stmt).scalars().all()
+
+    next_cursor = None
+    if len(rows) > limit:
+        rows = rows[:limit]
+        next_cursor = str(offset + limit)
+
+    return EventPublicListResponse(
+        items=[
+            EventPublicItem(
+                id=event_public_id(it.id),
+                title=it.title,
+                dateStart=it.date_start,
+                dateEnd=it.date_end,
+                timezone=it.timezone,
+                description=it.description,
+                category=it.category,
+                imageUrl=it.image_url,
+                locationName=it.location_name,
+                isPublished=it.is_published,
+            )
+            for it in rows
+        ],
+        nextCursor=next_cursor,
+    )
+
+
+@router.get("/events/{event_id}", response_model=EventPublicDetail)
+def get_event(event_id: str, db: Session = Depends(get_db)):
+    if not event_id.startswith("evt_"):
+        raise HTTPException(status_code=404, detail="Not found")
+
+    try:
+        db_id = int(event_id.split("_", 1)[1])
+    except ValueError:
+        raise HTTPException(status_code=404, detail="Not found")
+
+    it = db.execute(select(Event).where(Event.id == db_id, Event.is_published == True)).scalar_one_or_none()  # noqa: E712
+    if not it:
+        raise HTTPException(status_code=404, detail="Not found")
+
+    return EventPublicDetail(
+        id=event_public_id(it.id),
+        title=it.title,
+        dateStart=it.date_start,
+        dateEnd=it.date_end,
+        timezone=it.timezone,
+        description=it.description,
+        category=it.category,
+        imageUrl=it.image_url,
+        locationName=it.location_name,
+        isPublished=it.is_published,
+        createdAt=it.created_at,
+        updatedAt=it.updated_at,
+    )
 
 
 @router.get("/menu", response_model=MenuResponse)

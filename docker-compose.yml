@@ -13,7 +13,6 @@ services:
       - "127.0.0.1:3306:3306"
     volumes:
       - ariala_mysql:/var/lib/mysql
-    command: ["--default-authentication-plugin=mysql_native_password"]
 
   api:
     build: .

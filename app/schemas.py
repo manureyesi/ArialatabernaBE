@@ -112,6 +112,70 @@ class ContactProjectsOut(BaseModel):
     status: Literal["RECEIVED"] = "RECEIVED"
 
 
+class ProjectContactAdminItem(BaseModel):
+    id: str
+    name: str
+    email: EmailStr
+    phone: str | None = None
+    company: str | None = None
+    subject: str
+    message: str
+    consent: bool
+    source: str | None = None
+    createdAt: datetime
+
+
+class ProjectContactAdminListResponse(BaseModel):
+    items: list[ProjectContactAdminItem]
+
+
+class EventBase(BaseModel):
+    title: str
+    dateStart: datetime
+    dateEnd: datetime | None = None
+    timezone: str = "Europe/Madrid"
+    description: str
+    category: str
+    imageUrl: str
+    locationName: str | None = None
+    isPublished: bool = False
+
+
+class EventPublicItem(EventBase):
+    id: str
+
+
+class EventPublicDetail(EventPublicItem):
+    createdAt: datetime
+    updatedAt: datetime
+
+
+class EventPublicListResponse(BaseModel):
+    items: list[EventPublicItem]
+    nextCursor: str | None = None
+
+
+class EventAdminItem(EventPublicDetail):
+    pass
+
+
+class EventAdminListResponse(BaseModel):
+    items: list[EventAdminItem]
+    nextCursor: str | None = None
+
+
+class EventCreate(EventBase):
+    pass
+
+
+class EventUpdate(EventBase):
+    pass
+
+
+class EventCreateResponse(BaseModel):
+    id: str
+
+
 class ConfigItem(BaseModel):
     key: str
     value: str
