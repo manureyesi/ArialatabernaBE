@@ -17,6 +17,8 @@ from app.schemas import (
     ProjectContactAdminStatsResponse,
     AdminFoodCreate,
     AdminWineCreate,
+    AdminFoodUpdate,
+    AdminWineUpdate,
     EventAdminItem,
     EventAdminListResponse,
     EventCreate,
@@ -58,6 +60,7 @@ def create_food(payload: AdminFoodCreate, db: Session = Depends(get_db)):
         type=MenuItemType.FOOD,
         name=payload.name,
         description=payload.description,
+        category=payload.category,
         price_cents=eur_to_cents(payload.price),
         image_url=payload.imageUrl,
         is_active=True,
@@ -112,6 +115,61 @@ def delete_menu_item(item_id: str, db: Session = Depends(get_db)):
     db.delete(item)
     db.commit()
     return Response(status_code=status.HTTP_204_NO_CONTENT)
+
+
+@router.put("/menu/{item_id}")
+def update_menu_item(item_id: str, payload: AdminFoodUpdate | AdminWineUpdate, db: Session = Depends(get_db)):
+    if "_" not in item_id:
+        raise HTTPException(status_code=404, detail="Not found")
+
+    prefix, raw_id = item_id.split("_", 1)
+    if prefix == "food":
+        expected_type = MenuItemType.FOOD
+        if isinstance(payload, AdminWineUpdate):
+            raise HTTPException(status_code=400, detail="Invalid payload")
+    elif prefix == "wine":
+        expected_type = MenuItemType.WINE
+        if isinstance(payload, AdminFoodUpdate):
+            raise HTTPException(status_code=400, detail="Invalid payload")
+    else:
+        raise HTTPException(status_code=404, detail="Not found")
+
+    try:
+        db_id = int(raw_id)
+    except ValueError:
+        raise HTTPException(status_code=404, detail="Not found")
+
+    item = db.execute(select(MenuItem).where(MenuItem.id == db_id, MenuItem.type == expected_type)).scalar_one_or_none()
+    if not item:
+        raise HTTPException(status_code=404, detail="Not found")
+
+    if payload.name is not None:
+        item.name = payload.name
+    if payload.description is not None:
+        item.description = payload.description
+    if payload.imageUrl is not None:
+        item.image_url = payload.imageUrl
+    if payload.isActive is not None:
+        item.is_active = payload.isActive
+
+    if expected_type == MenuItemType.FOOD:
+        if payload.category is not None:
+            item.category = payload.category
+        if payload.price is not None:
+            item.price_cents = eur_to_cents(payload.price)
+    else:
+        if payload.category is not None:
+            item.category = payload.category
+        if payload.region is not None:
+            item.region = payload.region
+        if payload.glassPrice is not None:
+            item.glass_price_cents = eur_to_cents(payload.glassPrice)
+        if payload.bottlePrice is not None:
+            item.bottle_price_cents = eur_to_cents(payload.bottlePrice)
+
+    db.add(item)
+    db.commit()
+    return {"status": "updated"}
 
 
 @router.post("/schedule/day", status_code=status.HTTP_201_CREATED)

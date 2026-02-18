@@ -16,6 +16,7 @@ class MenuItemBase(BaseModel):
 
 class FoodItem(MenuItemBase):
     id: str
+    category: str | None = None
     price: float | None = None
     tags: list[str] = []
     imageUrl: str | None = None
@@ -33,6 +34,7 @@ class WineItem(MenuItemBase):
 class AdminFoodCreate(BaseModel):
     name: str
     description: str | None = None
+    category: str | None = None
     price: float | None = None
     imageUrl: str | None = None
 
@@ -45,6 +47,30 @@ class AdminWineCreate(BaseModel):
     glassPrice: float | None = None
     bottlePrice: float | None = None
     imageUrl: str | None = None
+
+
+class AdminFoodUpdate(BaseModel):
+    model_config = {"extra": "forbid"}
+
+    name: str | None = None
+    description: str | None = None
+    category: str | None = None
+    price: float | None = None
+    imageUrl: str | None = None
+    isActive: bool | None = None
+
+
+class AdminWineUpdate(BaseModel):
+    model_config = {"extra": "forbid"}
+
+    name: str | None = None
+    description: str | None = None
+    category: str | None = None
+    region: str | None = None
+    glassPrice: float | None = None
+    bottlePrice: float | None = None
+    imageUrl: str | None = None
+    isActive: bool | None = None
 
 
 class MenuResponse(BaseModel):
