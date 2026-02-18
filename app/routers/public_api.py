@@ -409,7 +409,7 @@ def contact_projects(payload: ContactProjectsCreate, db: Session = Depends(get_d
     return ContactProjectsOut(id=lead_public_id(lead.id))
 
 
-@router.get("/config", response_model=ConfigListResponse)
+@router.get("/config", response_model=list[ConfigItem])
 def get_public_config(db: Session = Depends(get_db)):
     items = db.execute(select(AppConfig)).scalars().all()
-    return ConfigListResponse(items=[ConfigItem(key=i.key, value=i.value) for i in items])
+    return [ConfigItem(key=i.key, value=i.value) for i in items]
