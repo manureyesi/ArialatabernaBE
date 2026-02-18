@@ -153,6 +153,7 @@ def get_menu(db: Session = Depends(get_db)):
                     description=it.description,
                     price=cents_to_eur(it.price_cents),
                     tags=[],
+                    imageUrl=it.image_url,
                     isActive=it.is_active,
                 )
             )
@@ -166,6 +167,7 @@ def get_menu(db: Session = Depends(get_db)):
                     region=it.region,
                     glassPrice=cents_to_eur(it.glass_price_cents),
                     bottlePrice=cents_to_eur(it.bottle_price_cents),
+                    imageUrl=it.image_url,
                     isActive=it.is_active,
                 )
             )
@@ -186,6 +188,7 @@ def get_food(db: Session = Depends(get_db)):
             description=it.description,
             price=cents_to_eur(it.price_cents),
             tags=[],
+            imageUrl=it.image_url,
             isActive=it.is_active,
         )
         for it in items
@@ -207,6 +210,7 @@ def get_wines(db: Session = Depends(get_db)):
             region=it.region,
             glassPrice=cents_to_eur(it.glass_price_cents),
             bottlePrice=cents_to_eur(it.bottle_price_cents),
+            imageUrl=it.image_url,
             isActive=it.is_active,
         )
         for it in items

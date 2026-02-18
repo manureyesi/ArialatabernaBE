@@ -33,6 +33,8 @@ class MenuItem(Base):
     glass_price_cents: Mapped[int | None] = mapped_column(Integer, nullable=True)
     bottle_price_cents: Mapped[int | None] = mapped_column(Integer, nullable=True)
 
+    image_url: Mapped[str | None] = mapped_column(Text, nullable=True)
+
     is_active: Mapped[bool] = mapped_column(Boolean, default=True, index=True)
     updated_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
 

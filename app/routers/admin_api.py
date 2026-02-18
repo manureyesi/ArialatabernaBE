@@ -50,8 +50,21 @@ def set_config(key: str, payload: ConfigItem, db: Session = Depends(get_db)):
 
 
 @router.post("/menu/food", status_code=status.HTTP_201_CREATED)
-def create_food(name: str, description: str | None = None, price: float | None = None, db: Session = Depends(get_db)):
-    item = MenuItem(type=MenuItemType.FOOD, name=name, description=description, price_cents=eur_to_cents(price), is_active=True)
+def create_food(
+    name: str,
+    description: str | None = None,
+    price: float | None = None,
+    imageUrl: str | None = None,
+    db: Session = Depends(get_db),
+):
+    item = MenuItem(
+        type=MenuItemType.FOOD,
+        name=name,
+        description=description,
+        price_cents=eur_to_cents(price),
+        image_url=imageUrl,
+        is_active=True,
+    )
     db.add(item)
     db.commit()
     db.refresh(item)
@@ -66,6 +79,7 @@ def create_wine(
     region: str | None = None,
     glassPrice: float | None = None,
     bottlePrice: float | None = None,
+    imageUrl: str | None = None,
     db: Session = Depends(get_db),
 ):
     item = MenuItem(
@@ -76,6 +90,7 @@ def create_wine(
         region=region,
         glass_price_cents=eur_to_cents(glassPrice),
         bottle_price_cents=eur_to_cents(bottlePrice),
+        image_url=imageUrl,
         is_active=True,
     )
     db.add(item)

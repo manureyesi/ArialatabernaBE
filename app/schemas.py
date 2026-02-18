@@ -18,6 +18,7 @@ class FoodItem(MenuItemBase):
     id: str
     price: float | None = None
     tags: list[str] = []
+    imageUrl: str | None = None
 
 
 class WineItem(MenuItemBase):
@@ -26,6 +27,7 @@ class WineItem(MenuItemBase):
     region: str | None = None
     glassPrice: float | None = None
     bottlePrice: float | None = None
+    imageUrl: str | None = None
 
 
 class MenuResponse(BaseModel):
