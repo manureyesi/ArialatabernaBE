@@ -98,6 +98,14 @@ class ProjectContact(Base):
     consent: Mapped[bool] = mapped_column(Boolean, default=False)
     source: Mapped[str | None] = mapped_column(String(50), nullable=True)
 
+    proposal_title: Mapped[str | None] = mapped_column(String(255), nullable=True)
+    proposal_discipline: Mapped[str | None] = mapped_column(String(120), nullable=True)
+    proposal_description: Mapped[str | None] = mapped_column(Text, nullable=True)
+    proposal_bio: Mapped[str | None] = mapped_column(Text, nullable=True)
+    proposal_socials: Mapped[str | None] = mapped_column(String(2048), nullable=True)
+    proposal_has_file: Mapped[bool] = mapped_column(Boolean, default=False)
+    proposal_file_base64: Mapped[str | None] = mapped_column(Text, nullable=True)
+
     is_read: Mapped[bool] = mapped_column(Boolean, default=False, index=True)
     read_at: Mapped[datetime | None] = mapped_column(DateTime, nullable=True)
 

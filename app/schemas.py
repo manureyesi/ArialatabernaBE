@@ -123,6 +123,13 @@ class ContactProjectsCreate(BaseModel):
     message: str
     consent: bool = False
     source: str | None = None
+    proposalTitle: str | None = None
+    proposalDiscipline: str | None = None
+    proposalDescription: str | None = None
+    proposalBio: str | None = None
+    proposalSocials: str | None = None
+    proposalHasFile: bool = False
+    proposalFileBase64: str | None = None
     honeypot: str | None = None
 
 
@@ -141,6 +148,13 @@ class ProjectContactAdminItem(BaseModel):
     message: str
     consent: bool
     source: str | None = None
+    proposalTitle: str | None = None
+    proposalDiscipline: str | None = None
+    proposalDescription: str | None = None
+    proposalBio: str | None = None
+    proposalSocials: str | None = None
+    proposalHasFile: bool = False
+    proposalFileBase64: str | None = None
     isRead: bool = False
     readAt: datetime | None = None
     createdAt: datetime

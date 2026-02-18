@@ -400,6 +400,13 @@ def contact_projects(payload: ContactProjectsCreate, db: Session = Depends(get_d
         message=payload.message,
         consent=payload.consent,
         source=payload.source,
+        proposal_title=payload.proposalTitle,
+        proposal_discipline=payload.proposalDiscipline,
+        proposal_description=payload.proposalDescription,
+        proposal_bio=payload.proposalBio,
+        proposal_socials=payload.proposalSocials,
+        proposal_has_file=payload.proposalHasFile,
+        proposal_file_base64=payload.proposalFileBase64,
     )
 
     db.add(lead)
