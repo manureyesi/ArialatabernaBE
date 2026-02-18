@@ -1,5 +1,8 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.staticfiles import StaticFiles
+
+import os
 
 from app.db import Base, engine
 from app.routers.public_api import router as public_router
@@ -9,9 +12,12 @@ from app.settings import settings
 
 app = FastAPI(title="Ariala Taberna API", version="1.0.0")
 
+app.mount("/static", StaticFiles(directory="static"), name="static")
+
 
 @app.on_event("startup")
 def _startup():
+    os.makedirs("static/events", exist_ok=True)
     Base.metadata.create_all(bind=engine)
 
 

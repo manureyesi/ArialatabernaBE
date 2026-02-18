@@ -118,7 +118,7 @@ class Event(Base):
     timezone: Mapped[str] = mapped_column(String(64), default="Europe/Madrid")
     description: Mapped[str] = mapped_column(Text)
     category: Mapped[str] = mapped_column(String(100), index=True)
-    image_url: Mapped[str] = mapped_column(String(2048))
+    image_url: Mapped[str] = mapped_column(Text)
     location_name: Mapped[str | None] = mapped_column(String(255), nullable=True)
 
     is_published: Mapped[bool] = mapped_column(Boolean, default=False, index=True)
