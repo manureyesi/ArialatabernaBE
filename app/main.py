@@ -35,6 +35,11 @@ def _startup():
             db.add(AppConfig(key="mail-contacto", value="@"))
             db.commit()
 
+        existing = db.get(AppConfig, "horario")
+        if not existing:
+            db.add(AppConfig(key="horario", value=""))
+            db.commit()
+
     finally:
         db.close()
 
