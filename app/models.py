@@ -39,6 +39,22 @@ class MenuItem(Base):
     updated_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
 
 
+class MenuCategory(Base):
+    __tablename__ = "menu_categories"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
+
+    category: Mapped[str] = mapped_column(String(100), index=True)
+    subcategory: Mapped[str | None] = mapped_column(String(150), nullable=True)
+    orden: Mapped[int] = mapped_column(Integer, default=0, index=True)
+
+    parent_id: Mapped[int | None] = mapped_column(ForeignKey("menu_categories.id"), nullable=True, index=True)
+    parent: Mapped["MenuCategory" | None] = relationship(remote_side="MenuCategory.id", back_populates="children")
+    children: Mapped[list["MenuCategory"]] = relationship(back_populates="parent", cascade="all, delete-orphan")
+
+    __table_args__ = (UniqueConstraint("category", "subcategory", name="uq_menu_category"),)
+
+
 class ScheduleDay(Base):
     __tablename__ = "schedule_days"
 

@@ -60,6 +60,19 @@ class AdminFoodUpdate(BaseModel):
     isActive: bool | None = None
 
 
+class MenuCategoryCreate(BaseModel):
+    category: str
+    subcategory: str | None = None
+    orden: int = 0
+
+
+class MenuCategoryItem(BaseModel):
+    category: str
+    subcategory: str | None = None
+    orden: int
+    children: list["MenuCategoryItem"] = []
+
+
 class AdminWineUpdate(BaseModel):
     model_config = {"extra": "forbid"}
 
@@ -249,3 +262,6 @@ class ConfigItem(BaseModel):
 
 class ConfigListResponse(BaseModel):
     items: list[ConfigItem]
+
+
+MenuCategoryItem.model_rebuild()

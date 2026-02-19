@@ -9,6 +9,7 @@ from datetime import datetime, timedelta
 from app.auth import require_admin
 from app.db import get_db
 from app.models import AppConfig, MenuItem, MenuItemType, ProjectContact, ScheduleDay, ServiceWindow, Event
+from app.models import MenuCategory
 from app.schemas import (
     ConfigItem,
     ConfigListResponse,
@@ -19,6 +20,8 @@ from app.schemas import (
     AdminWineCreate,
     AdminFoodUpdate,
     AdminWineUpdate,
+    MenuCategoryCreate,
+    MenuCategoryItem,
     EventAdminItem,
     EventAdminListResponse,
     EventCreate,
@@ -88,6 +91,101 @@ def create_wine(payload: AdminWineCreate, db: Session = Depends(get_db)):
     db.commit()
     db.refresh(item)
     return {"id": f"wine_{item.id}"}
+
+
+@router.post("/menu/categories", status_code=status.HTTP_201_CREATED)
+def create_menu_category(payload: MenuCategoryCreate, db: Session = Depends(get_db)):
+    if payload.subcategory is None:
+        existing = (
+            db.execute(
+                select(MenuCategory).where(
+                    MenuCategory.category == payload.category,
+                    MenuCategory.subcategory.is_(None),
+                )
+            )
+            .scalars()
+            .first()
+        )
+        if existing:
+            existing.orden = payload.orden
+            db.add(existing)
+            db.commit()
+            return {"id": existing.id}
+
+        cat = MenuCategory(category=payload.category, subcategory=None, orden=payload.orden, parent_id=None)
+        db.add(cat)
+        db.commit()
+        db.refresh(cat)
+        return {"id": cat.id}
+
+    parent = (
+        db.execute(
+            select(MenuCategory).where(
+                MenuCategory.category == payload.category,
+                MenuCategory.subcategory.is_(None),
+            )
+        )
+        .scalars()
+        .first()
+    )
+    if not parent:
+        raise HTTPException(status_code=400, detail="Parent category does not exist")
+
+    existing = (
+        db.execute(
+            select(MenuCategory).where(
+                MenuCategory.category == payload.category,
+                MenuCategory.subcategory == payload.subcategory,
+            )
+        )
+        .scalars()
+        .first()
+    )
+    if existing:
+        existing.orden = payload.orden
+        existing.parent_id = parent.id
+        db.add(existing)
+        db.commit()
+        return {"id": existing.id}
+
+    sub = MenuCategory(
+        category=payload.category,
+        subcategory=payload.subcategory,
+        orden=payload.orden,
+        parent_id=parent.id,
+    )
+    db.add(sub)
+    db.commit()
+    db.refresh(sub)
+    return {"id": sub.id}
+
+
+@router.get("/menu/categories", response_model=list[MenuCategoryItem])
+def list_menu_categories(db: Session = Depends(get_db)):
+    rows = db.execute(select(MenuCategory).order_by(MenuCategory.orden.asc(), MenuCategory.id.asc())).scalars().all()
+
+    parents = [r for r in rows if r.parent_id is None]
+    children_by_parent: dict[int, list[MenuCategory]] = {}
+    for r in rows:
+        if r.parent_id is not None:
+            children_by_parent.setdefault(r.parent_id, []).append(r)
+
+    out: list[MenuCategoryItem] = []
+    for p in sorted(parents, key=lambda x: (x.orden, x.id)):
+        kids = sorted(children_by_parent.get(p.id, []), key=lambda x: (x.orden, x.id))
+        out.append(
+            MenuCategoryItem(
+                category=p.category,
+                subcategory=None,
+                orden=p.orden,
+                children=[
+                    MenuCategoryItem(category=k.category, subcategory=k.subcategory, orden=k.orden, children=[])
+                    for k in kids
+                ],
+            )
+        )
+
+    return out
 
 
 @router.delete("/menu/{item_id}", status_code=status.HTTP_204_NO_CONTENT)

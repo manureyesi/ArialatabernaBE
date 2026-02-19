@@ -7,7 +7,7 @@ from sqlalchemy import select, func
 from sqlalchemy.orm import Session
 
 from app.db import get_db
-from app.models import MenuItem, MenuItemType, ScheduleDay, ServiceWindow, Reservation, ReservationStatus, ProjectContact, Event, AppConfig
+from app.models import MenuItem, MenuItemType, ScheduleDay, ServiceWindow, Reservation, ReservationStatus, ProjectContact, Event, AppConfig, MenuCategory
 from app.schemas import (
     MenuResponse,
     FoodItem,
@@ -28,6 +28,7 @@ from app.schemas import (
     ContactProjectsOut,
     ConfigItem,
     ConfigListResponse,
+    MenuCategoryItem,
 )
 from app.settings import settings
 from app.utils import cents_to_eur, eur_to_cents, food_public_id, wine_public_id, reservation_public_id, lead_public_id, event_public_id, now_utc
@@ -134,10 +135,17 @@ def get_event(event_id: str, db: Session = Depends(get_db)):
 
 
 @router.get("/menu", response_model=MenuResponse)
-def get_menu(db: Session = Depends(get_db)):
-    items = db.execute(
-        select(MenuItem).where(MenuItem.is_active == True)  # noqa: E712
-    ).scalars().all()
+def get_menu(category: str | None = None, subcategory: str | None = None, db: Session = Depends(get_db)):
+    stmt = select(MenuItem).where(MenuItem.is_active == True)  # noqa: E712
+    if category:
+        if category.lower() == "food":
+            stmt = stmt.where(MenuItem.type == MenuItemType.FOOD)
+        elif category.lower() == "wine":
+            stmt = stmt.where(MenuItem.type == MenuItemType.WINE)
+    if subcategory:
+        stmt = stmt.where(MenuItem.category == subcategory)
+
+    items = db.execute(stmt).scalars().all()
 
     food: list[FoodItem] = []
     wines: list[WineItem] = []
@@ -176,6 +184,34 @@ def get_menu(db: Session = Depends(get_db)):
             )
 
     return MenuResponse(id="menu_current", updatedAt=updated_at, food=food, wines=wines)
+
+
+@router.get("/menu/categories", response_model=list[MenuCategoryItem])
+def get_menu_categories(db: Session = Depends(get_db)):
+    rows = db.execute(select(MenuCategory).order_by(MenuCategory.orden.asc(), MenuCategory.id.asc())).scalars().all()
+
+    parents = [r for r in rows if r.parent_id is None]
+    children_by_parent: dict[int, list[MenuCategory]] = {}
+    for r in rows:
+        if r.parent_id is not None:
+            children_by_parent.setdefault(r.parent_id, []).append(r)
+
+    out: list[MenuCategoryItem] = []
+    for p in sorted(parents, key=lambda x: (x.orden, x.id)):
+        kids = sorted(children_by_parent.get(p.id, []), key=lambda x: (x.orden, x.id))
+        out.append(
+            MenuCategoryItem(
+                category=p.category,
+                subcategory=None,
+                orden=p.orden,
+                children=[
+                    MenuCategoryItem(category=k.category, subcategory=k.subcategory, orden=k.orden, children=[])
+                    for k in kids
+                ],
+            )
+        )
+
+    return out
 
 
 @router.get("/menu/food", response_model=list[FoodItem])
