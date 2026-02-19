@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import enum
 from datetime import datetime
+from typing import Optional
 
 from sqlalchemy import String, Integer, DateTime, Boolean, Text, Enum, ForeignKey, UniqueConstraint
 from sqlalchemy.orm import Mapped, mapped_column, relationship
@@ -51,7 +52,7 @@ class MenuCategory(Base):
     orden: Mapped[int] = mapped_column(Integer, default=0, index=True)
 
     parent_id: Mapped[int | None] = mapped_column(ForeignKey("menu_categories.id"), nullable=True, index=True)
-    parent: Mapped["MenuCategory" | None] = relationship(remote_side="MenuCategory.id", back_populates="children")
+    parent: Mapped[Optional["MenuCategory"]] = relationship(remote_side="MenuCategory.id", back_populates="children")
     children: Mapped[list["MenuCategory"]] = relationship(back_populates="parent", cascade="all, delete-orphan")
 
     __table_args__ = (UniqueConstraint("category", "subcategory", name="uq_menu_category"),)
