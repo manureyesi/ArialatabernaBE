@@ -71,6 +71,7 @@ class MenuCategoryCreate(BaseModel):
 
 
 class MenuCategoryItem(BaseModel):
+    id: int
     category: str
     subcategory: str | None = None
     orden: int

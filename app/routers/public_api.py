@@ -207,11 +207,12 @@ def get_menu_categories(category: str | None = None, db: Session = Depends(get_d
         kids = sorted(children_by_parent.get(p.id, []), key=lambda x: (x.orden, x.id))
         out.append(
             MenuCategoryItem(
+                id=p.id,
                 category=p.category,
                 subcategory=None,
                 orden=p.orden,
                 children=[
-                    MenuCategoryItem(category=k.category, subcategory=k.subcategory, orden=k.orden, children=[])
+                    MenuCategoryItem(id=k.id, category=k.category, subcategory=k.subcategory, orden=k.orden, children=[])
                     for k in kids
                 ],
             )
