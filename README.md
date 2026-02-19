@@ -32,9 +32,9 @@ Backend de Ariala Taberna.
 
 ## Endpoints admin (Basic Auth)
 
-- `GET /admin/config`
-- `PUT /admin/config/{key}`
-- `POST /admin/menu/food`
-- `POST /admin/menu/wines`
-- `POST /admin/schedule/day`
-- `POST /admin/schedule/window`
+- `GET /api/v1/admin/config`
+- `PUT /api/v1/admin/config/{key}`
+- `POST /api/v1/admin/menu/food`
+- `POST /api/v1/admin/menu/wines`
+- `POST /api/v1/admin/schedule/day`
+- `POST /api/v1/admin/schedule/window`

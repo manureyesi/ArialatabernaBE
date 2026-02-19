@@ -31,7 +31,7 @@ from app.schemas import (
 from app.utils import eur_to_cents, event_public_id
 
 
-router = APIRouter(prefix="/admin", dependencies=[Depends(require_admin)])
+router = APIRouter(prefix="/api/v1/admin", dependencies=[Depends(require_admin)])
 
 
 @router.get("/config", response_model=list[ConfigItem])
