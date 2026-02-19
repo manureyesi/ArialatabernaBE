@@ -40,6 +40,11 @@ def _startup():
             db.add(AppConfig(key="horario", value=""))
             db.commit()
 
+        existing = db.get(AppConfig, "url-img-hone")
+        if not existing:
+            db.add(AppConfig(key="url-img-hone", value=""))
+            db.commit()
+
     finally:
         db.close()
 
