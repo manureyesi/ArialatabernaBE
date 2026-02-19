@@ -26,6 +26,8 @@ class WineItem(MenuItemBase):
     id: str
     category: str | None = None
     region: str | None = None
+    wineType: str | None = None
+    grapes: str | None = None
     glassPrice: float | None = None
     bottlePrice: float | None = None
     imageUrl: str | None = None
@@ -44,6 +46,8 @@ class AdminWineCreate(BaseModel):
     description: str | None = None
     category: str | None = None
     region: str | None = None
+    wineType: str | None = None
+    grapes: str | None = None
     glassPrice: float | None = None
     bottlePrice: float | None = None
     imageUrl: str | None = None
@@ -80,6 +84,8 @@ class AdminWineUpdate(BaseModel):
     description: str | None = None
     category: str | None = None
     region: str | None = None
+    wineType: str | None = None
+    grapes: str | None = None
     glassPrice: float | None = None
     bottlePrice: float | None = None
     imageUrl: str | None = None

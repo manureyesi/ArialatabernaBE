@@ -33,6 +33,8 @@ class MenuItem(Base):
 
     category: Mapped[str | None] = mapped_column(String(100), nullable=True)
     region: Mapped[str | None] = mapped_column(String(100), nullable=True)
+    wine_type: Mapped[str | None] = mapped_column(String(100), nullable=True)
+    grapes: Mapped[str | None] = mapped_column(String(255), nullable=True)
     glass_price_cents: Mapped[int | None] = mapped_column(Integer, nullable=True)
     bottle_price_cents: Mapped[int | None] = mapped_column(Integer, nullable=True)
 

@@ -82,6 +82,8 @@ def create_wine(payload: AdminWineCreate, db: Session = Depends(get_db)):
         description=payload.description,
         category=payload.category,
         region=payload.region,
+        wine_type=payload.wineType,
+        grapes=payload.grapes,
         glass_price_cents=eur_to_cents(payload.glassPrice),
         bottle_price_cents=eur_to_cents(payload.bottlePrice),
         image_url=payload.imageUrl,
@@ -276,6 +278,10 @@ def update_menu_item(item_id: str, payload: AdminFoodUpdate | AdminWineUpdate, d
             item.category = payload.category
         if _should_update("region"):
             item.region = payload.region
+        if _should_update("wineType"):
+            item.wine_type = payload.wineType
+        if _should_update("grapes"):
+            item.grapes = payload.grapes
         if _should_update("glassPrice"):
             item.glass_price_cents = eur_to_cents(payload.glassPrice)
         if _should_update("bottlePrice"):
