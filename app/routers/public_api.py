@@ -187,8 +187,12 @@ def get_menu(category: str | None = None, subcategory: str | None = None, db: Se
 
 
 @router.get("/menu/categories", response_model=list[MenuCategoryItem])
-def get_menu_categories(db: Session = Depends(get_db)):
-    rows = db.execute(select(MenuCategory).order_by(MenuCategory.orden.asc(), MenuCategory.id.asc())).scalars().all()
+def get_menu_categories(category: str | None = None, db: Session = Depends(get_db)):
+    stmt = select(MenuCategory).order_by(MenuCategory.orden.asc(), MenuCategory.id.asc())
+    if category:
+        stmt = stmt.where(MenuCategory.category == category)
+
+    rows = db.execute(stmt).scalars().all()
 
     parents = [r for r in rows if r.parent_id is None]
     children_by_parent: dict[int, list[MenuCategory]] = {}
