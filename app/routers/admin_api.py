@@ -188,6 +188,19 @@ def list_menu_categories(db: Session = Depends(get_db)):
     return out
 
 
+@router.delete("/menu/categories/{subcategory_id}", status_code=status.HTTP_204_NO_CONTENT)
+def delete_menu_subcategory(subcategory_id: int, db: Session = Depends(get_db)):
+    sub = db.execute(select(MenuCategory).where(MenuCategory.id == subcategory_id)).scalar_one_or_none()
+    if not sub:
+        raise HTTPException(status_code=404, detail="Not found")
+    if sub.parent_id is None:
+        raise HTTPException(status_code=400, detail="Cannot delete parent category")
+
+    db.delete(sub)
+    db.commit()
+    return Response(status_code=status.HTTP_204_NO_CONTENT)
+
+
 @router.delete("/menu/{item_id}", status_code=status.HTTP_204_NO_CONTENT)
 def delete_menu_item(item_id: str, db: Session = Depends(get_db)):
     if "_" not in item_id:
