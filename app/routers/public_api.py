@@ -322,6 +322,10 @@ def get_availability(
             return AvailabilityResponse(date=day_date, partySize=partySize, slots=[])
 
         slot_times = _generate_slots(day.windows)
+        today = datetime.utcnow().strftime("%Y-%m-%d")
+        if day_date == today:
+            now_time = datetime.utcnow().strftime("%H:%M")
+            slot_times = [t for t in slot_times if t >= now_time]
         res_counts = dict(
             db.execute(
                 select(Reservation.time, func.count(Reservation.id))
