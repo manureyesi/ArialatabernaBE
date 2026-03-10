@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from datetime import datetime, timedelta
+from zoneinfo import ZoneInfo
 
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy import select, func
@@ -322,9 +323,10 @@ def get_availability(
             return AvailabilityResponse(date=day_date, partySize=partySize, slots=[])
 
         slot_times = _generate_slots(day.windows)
-        today = datetime.utcnow().strftime("%Y-%m-%d")
+        now_local = datetime.now(ZoneInfo("Europe/Madrid"))
+        today = now_local.strftime("%Y-%m-%d")
         if day_date == today:
-            now_time = datetime.utcnow().strftime("%H:%M")
+            now_time = now_local.strftime("%H:%M")
             slot_times = [t for t in slot_times if t >= now_time]
         res_counts = dict(
             db.execute(
