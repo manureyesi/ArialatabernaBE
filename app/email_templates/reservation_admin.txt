@@ -1,14 +1,15 @@
-Nova reserva recibida
+Ariala Taberna — Nova reserva recibida
 
-ID: {{ reservation_id }}
-Data: {{ date }}
-Hora: {{ time }}
-Persoas: {{ party_size }}
+Detalles da reserva
+- Referencia: {{ reservation_id }}
+- Data: {{ date }}
+- Hora: {{ time }}
+- Persoas: {{ party_size }}
 
-Cliente:
+Datos do cliente
 - Nome: {{ customer_name }}
 - Teléfono: {{ customer_phone or '-' }}
 - Email: {{ customer_email or '-' }}
 
-Notas:
+Notas
 {{ notes or '-' }}

@@ -1,8 +1,14 @@
-A túa reserva foi recibida
+Ariala Taberna — Reserva recibida
 
-ID: {{ reservation_id }}
-Data: {{ date }}
-Hora: {{ time }}
-Persoas: {{ party_size }}
+Ola,
 
-Grazas por reservar en Ariala Taberna.
+Recibimos a túa solicitude de reserva. Estes son os datos:
+
+- Referencia: {{ reservation_id }}
+- Data: {{ date }}
+- Hora: {{ time }}
+- Persoas: {{ party_size }}
+
+Grazas por reservar con nós.
+
+Se precisas modificar ou cancelar a reserva, facilita a referencia {{ reservation_id }}.
