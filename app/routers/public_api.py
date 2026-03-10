@@ -36,7 +36,7 @@ from app.schemas import (
 )
 from app.settings import settings
 from app.utils import cents_to_eur, eur_to_cents, food_public_id, wine_public_id, reservation_public_id, lead_public_id, event_public_id, now_utc
-from app.mailer import send_templated_email
+from app.mailer import send_templated_email_async
 
 
 _logger = logging.getLogger(__name__)
@@ -444,26 +444,20 @@ def create_reservation(payload: ReservationCreate, db: Session = Depends(get_db)
         "manage_url": manage_url,
     }
     if settings.admin_email:
-        try:
-            send_templated_email(
-                to=settings.admin_email,
-                subject=f"Nova reserva {ctx['reservation_id']}",
-                template_base="reservation_admin",
-                context=ctx,
-            )
-        except Exception:
-            _logger.exception("Failed sending reservation admin email")
+        send_templated_email_async(
+            to=settings.admin_email,
+            subject=f"Nova reserva {ctx['reservation_id']}",
+            template_base="reservation_admin",
+            context=ctx,
+        )
 
     if r.customer_email:
-        try:
-            send_templated_email(
-                to=r.customer_email,
-                subject=f"Reserva recibida {ctx['reservation_id']}",
-                template_base="reservation_customer",
-                context=ctx,
-            )
-        except Exception:
-            _logger.exception("Failed sending reservation customer email")
+        send_templated_email_async(
+            to=r.customer_email,
+            subject=f"Reserva recibida {ctx['reservation_id']}",
+            template_base="reservation_customer",
+            context=ctx,
+        )
 
     return ReservationOut(
         id=reservation_public_id(r.id),
@@ -542,26 +536,20 @@ def cancel_reservation(reservation_id: str, payload: CancelReservation, db: Sess
     }
 
     if settings.admin_email:
-        try:
-            send_templated_email(
-                to=settings.admin_email,
-                subject=f"Reserva cancelada {ctx['reservation_id']}",
-                template_base="reservation_cancelled_admin",
-                context=ctx,
-            )
-        except Exception:
-            _logger.exception("Failed sending reservation cancelled admin email")
+        send_templated_email_async(
+            to=settings.admin_email,
+            subject=f"Reserva cancelada {ctx['reservation_id']}",
+            template_base="reservation_cancelled_admin",
+            context=ctx,
+        )
 
     if r.customer_email:
-        try:
-            send_templated_email(
-                to=r.customer_email,
-                subject=f"Reserva cancelada {ctx['reservation_id']}",
-                template_base="reservation_cancelled_customer",
-                context=ctx,
-            )
-        except Exception:
-            _logger.exception("Failed sending reservation cancelled customer email")
+        send_templated_email_async(
+            to=r.customer_email,
+            subject=f"Reserva cancelada {ctx['reservation_id']}",
+            template_base="reservation_cancelled_customer",
+            context=ctx,
+        )
 
     return ReservationOut(
         id=reservation_public_id(r.id),

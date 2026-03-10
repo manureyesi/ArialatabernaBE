@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import logging
 import smtplib
+import threading
 from email.message import EmailMessage
 from pathlib import Path
 
@@ -69,3 +70,14 @@ def send_templated_email(*, to: str, subject: str, template_base: str, context: 
     except Exception:
         _logger.exception("Failed sending email to %s", to)
         raise
+
+
+def send_templated_email_async(*, to: str, subject: str, template_base: str, context: dict) -> None:
+    def _runner() -> None:
+        try:
+            send_templated_email(to=to, subject=subject, template_base=template_base, context=context)
+        except Exception:
+            _logger.exception("Async email send failed")
+
+    t = threading.Thread(target=_runner, daemon=True)
+    t.start()
