@@ -341,6 +341,27 @@ def add_service_window(date: str, start: str, end: str, db: Session = Depends(ge
     return {"id": window.id}
 
 
+@router.delete("/schedule/windows", status_code=status.HTTP_204_NO_CONTENT)
+def delete_service_windows(date: str, db: Session = Depends(get_db)):
+    try:
+        if len(date) == 10 and date[2] == "-" and date[5] == "-":
+            date = datetime.strptime(date, "%d-%m-%Y").strftime("%Y-%m-%d")
+        else:
+            date = datetime.strptime(date, "%Y-%m-%d").strftime("%Y-%m-%d")
+    except ValueError:
+        raise HTTPException(status_code=400, detail="Invalid date")
+
+    day = db.execute(select(ScheduleDay).where(ScheduleDay.date == date)).scalar_one_or_none()
+    if not day:
+        raise HTTPException(status_code=404, detail="Not found")
+
+    for w in list(day.windows):
+        db.delete(w)
+
+    db.commit()
+    return Response(status_code=status.HTTP_204_NO_CONTENT)
+
+
 def _reservation_to_out(r: Reservation) -> ReservationOut:
     return ReservationOut(
         id=reservation_public_id(r.id),
