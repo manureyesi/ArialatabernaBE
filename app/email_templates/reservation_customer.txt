@@ -1,0 +1,8 @@
+A túa reserva foi recibida
+
+ID: {{ reservation_id }}
+Data: {{ date }}
+Hora: {{ time }}
+Persoas: {{ party_size }}
+
+Grazas por reservar en Ariala Taberna.

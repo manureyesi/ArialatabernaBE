@@ -7,6 +7,8 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy import select, func
 from sqlalchemy.orm import Session
 
+import logging
+
 from app.db import get_db
 from app.models import MenuItem, MenuItemType, ScheduleDay, ServiceWindow, Reservation, ReservationStatus, ProjectContact, Event, AppConfig, MenuCategory
 from app.schemas import (
@@ -34,6 +36,10 @@ from app.schemas import (
 )
 from app.settings import settings
 from app.utils import cents_to_eur, eur_to_cents, food_public_id, wine_public_id, reservation_public_id, lead_public_id, event_public_id, now_utc
+from app.mailer import send_templated_email
+
+
+_logger = logging.getLogger(__name__)
 
 
 router = APIRouter(prefix="/api/v1")
@@ -414,6 +420,38 @@ def create_reservation(payload: ReservationCreate, db: Session = Depends(get_db)
     db.add(r)
     db.commit()
     db.refresh(r)
+
+    ctx = {
+        "reservation_id": reservation_public_id(r.id),
+        "date": r.date,
+        "time": r.time,
+        "party_size": r.party_size,
+        "customer_name": r.customer_name,
+        "customer_phone": r.customer_phone,
+        "customer_email": r.customer_email,
+        "notes": r.notes,
+    }
+    if settings.admin_email:
+        try:
+            send_templated_email(
+                to=settings.admin_email,
+                subject=f"Nova reserva {ctx['reservation_id']}",
+                template_base="reservation_admin",
+                context=ctx,
+            )
+        except Exception:
+            _logger.exception("Failed sending reservation admin email")
+
+    if r.customer_email:
+        try:
+            send_templated_email(
+                to=r.customer_email,
+                subject=f"Reserva recibida {ctx['reservation_id']}",
+                template_base="reservation_customer",
+                context=ctx,
+            )
+        except Exception:
+            _logger.exception("Failed sending reservation customer email")
 
     return ReservationOut(
         id=reservation_public_id(r.id),

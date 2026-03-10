@@ -1,16 +1,12 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.staticfiles import StaticFiles
-
-import os
 
 from app.db import Base, engine
 from app.db import SessionLocal
 from app.models import AppConfig
-from app.routers.public_api import router as public_router
 from app.routers.admin_api import router as admin_router
+from app.routers.public_api import router as public_router
 from app.settings import settings
-
 
 app = FastAPI(title="Ariala Taberna API", version="1.0.0")
 
