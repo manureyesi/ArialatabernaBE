@@ -1,0 +1,18 @@
+Ariala Taberna — Reserva cancelada
+
+Ola {{ customer_name }},
+
+A túa reserva foi cancelada.
+
+- Referencia: {{ reservation_id }}
+- Data: {{ date }}
+- Hora: {{ time }}
+- Persoas: {{ party_size }}
+
+{% if cancel_reason %}Motivo:
+{{ cancel_reason }}
+
+{% endif %}Se precisas axuda, responde a este correo ou contacta con nós.
+
+Grazas,
+Ariala Taberna

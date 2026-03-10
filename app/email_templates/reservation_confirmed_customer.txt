@@ -1,0 +1,16 @@
+Ariala Taberna — Reserva confirmada
+
+Ola {{ customer_name }},
+
+A túa reserva foi confirmada.
+
+- Referencia: {{ reservation_id }}
+- Data: {{ date }}
+- Hora: {{ time }}
+- Persoas: {{ party_size }}
+
+Podes consultar e cancelar a túa reserva en:
+{{ manage_url }}
+
+Grazas,
+Ariala Taberna

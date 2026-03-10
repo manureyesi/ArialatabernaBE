@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+import logging
+
 from datetime import datetime, timedelta
 
 from fastapi import APIRouter, Depends, HTTPException, Response, status
@@ -31,6 +33,10 @@ from app.schemas import (
     CancelReservation,
 )
 from app.utils import eur_to_cents, event_public_id, reservation_public_id
+from app.mailer import send_templated_email
+
+
+_logger = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/api/v1/admin", dependencies=[Depends(require_admin)])
 
@@ -421,6 +427,35 @@ def confirm_reservation(reservation_id: str, db: Session = Depends(get_db)):
     db.add(r)
     db.commit()
     db.refresh(r)
+
+    if r.customer_email:
+        base_url = None
+        try:
+            cfg = db.get(AppConfig, "url-hone")
+            if cfg and cfg.value and cfg.value.strip():
+                base_url = cfg.value.strip().rstrip("/")
+        except Exception:
+            base_url = None
+        manage_path = f"/reservas/{reservation_public_id(r.id)}"
+        manage_url = f"{base_url}{manage_path}" if base_url else manage_path
+
+        ctx = {
+            "reservation_id": reservation_public_id(r.id),
+            "date": r.date,
+            "time": r.time,
+            "party_size": r.party_size,
+            "customer_name": r.customer_name,
+            "manage_url": manage_url,
+        }
+        try:
+            send_templated_email(
+                to=r.customer_email,
+                subject=f"Reserva confirmada {ctx['reservation_id']}",
+                template_base="reservation_confirmed_customer",
+                context=ctx,
+            )
+        except Exception:
+            _logger.exception("Failed sending reservation confirmed email")
     return _reservation_to_out(r)
 
 
@@ -444,6 +479,36 @@ def cancel_reservation_admin(reservation_id: str, payload: CancelReservation, db
     db.add(r)
     db.commit()
     db.refresh(r)
+
+    if r.customer_email:
+        base_url = None
+        try:
+            cfg = db.get(AppConfig, "url-hone")
+            if cfg and cfg.value and cfg.value.strip():
+                base_url = cfg.value.strip().rstrip("/")
+        except Exception:
+            base_url = None
+        manage_path = f"/reservas/{reservation_public_id(r.id)}"
+        manage_url = f"{base_url}{manage_path}" if base_url else manage_path
+
+        ctx = {
+            "reservation_id": reservation_public_id(r.id),
+            "date": r.date,
+            "time": r.time,
+            "party_size": r.party_size,
+            "customer_name": r.customer_name,
+            "manage_url": manage_url,
+            "cancel_reason": (payload.reason or "").strip() or None,
+        }
+        try:
+            send_templated_email(
+                to=r.customer_email,
+                subject=f"Reserva cancelada {ctx['reservation_id']}",
+                template_base="reservation_cancelled_customer",
+                context=ctx,
+            )
+        except Exception:
+            _logger.exception("Failed sending reservation cancelled email")
     return _reservation_to_out(r)
 
 
