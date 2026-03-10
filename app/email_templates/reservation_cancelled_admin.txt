@@ -1,0 +1,20 @@
+Ariala Taberna — Reserva cancelada (cliente)
+
+A seguinte reserva foi cancelada dende o portal público.
+
+Detalles da reserva
++- Referencia: {{ reservation_id }}
++- Data: {{ date }}
++- Hora: {{ time }}
++- Persoas: {{ party_size }}
+
+Datos do cliente
++- Nome: {{ customer_name }}
++- Teléfono: {{ customer_phone or '-' }}
++- Email: {{ customer_email or '-' }}
+
+{% if cancel_reason %}Motivo indicado polo cliente
+{{ cancel_reason }}
+
+{% endif %}Notas
+{{ notes or '-' }}

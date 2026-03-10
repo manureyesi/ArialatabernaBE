@@ -517,6 +517,52 @@ def cancel_reservation(reservation_id: str, payload: CancelReservation, db: Sess
     db.commit()
     db.refresh(r)
 
+    base_url = None
+    try:
+        cfg = db.get(AppConfig, "url-hone")
+        if cfg and cfg.value and cfg.value.strip():
+            base_url = cfg.value.strip().rstrip("/")
+    except Exception:
+        base_url = None
+
+    manage_path = f"/reservas/{reservation_public_id(r.id)}"
+    manage_url = f"{base_url}{manage_path}" if base_url else manage_path
+
+    ctx = {
+        "reservation_id": reservation_public_id(r.id),
+        "date": r.date,
+        "time": r.time,
+        "party_size": r.party_size,
+        "customer_name": r.customer_name,
+        "customer_phone": r.customer_phone,
+        "customer_email": r.customer_email,
+        "notes": r.notes,
+        "manage_url": manage_url,
+        "cancel_reason": (payload.reason or "").strip() or None,
+    }
+
+    if settings.admin_email:
+        try:
+            send_templated_email(
+                to=settings.admin_email,
+                subject=f"Reserva cancelada {ctx['reservation_id']}",
+                template_base="reservation_cancelled_admin",
+                context=ctx,
+            )
+        except Exception:
+            _logger.exception("Failed sending reservation cancelled admin email")
+
+    if r.customer_email:
+        try:
+            send_templated_email(
+                to=r.customer_email,
+                subject=f"Reserva cancelada {ctx['reservation_id']}",
+                template_base="reservation_cancelled_customer",
+                context=ctx,
+            )
+        except Exception:
+            _logger.exception("Failed sending reservation cancelled customer email")
+
     return ReservationOut(
         id=reservation_public_id(r.id),
         status=r.status.value,
