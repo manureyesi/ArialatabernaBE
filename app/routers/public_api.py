@@ -342,7 +342,7 @@ def get_availability(
             return any(w.start <= t < w.end for w in started_windows)
 
         if is_today:
-            slot_times = [t for t in slot_times if t >= now_time or _in_started_window(t)]
+            slot_times = [t for t in slot_times if t >= now_time]
 
         res_counts = dict(
             db.execute(
@@ -358,7 +358,7 @@ def get_availability(
         slots: list[AvailabilitySlot] = []
         for t in slot_times:
             if _in_started_window(t):
-                slots.append(AvailabilitySlot(time=t, available=False, reason="No se puede reservar llame por telefono"))
+                slots.append(AvailabilitySlot(time=t, available=False, reason="Non se pode realizar a reserva automática porque o servizo xa comezou. Por favor, contacte por teléfono."))
             else:
                 count = int(res_counts.get(t, 0))
                 available = count < capacity
