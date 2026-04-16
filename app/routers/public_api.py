@@ -66,7 +66,14 @@ def list_events(
         if offset < 0:
             raise HTTPException(status_code=400, detail="Invalid cursor")
 
-    stmt = select(Event).where(Event.is_published == True)  # noqa: E712
+    now = datetime.utcnow()
+    max_date = now + timedelta(days=120)
+
+    stmt = select(Event).where(
+        Event.is_published == True,  # noqa: E712
+        Event.date_start >= now,
+        Event.date_start < max_date,
+    )
     if category:
         stmt = stmt.where(Event.category == category)
 
